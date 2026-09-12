@@ -4,9 +4,7 @@
 
 # 🛡️ Sentra (SecureRAG)
 
-An experimental framework evaluating whether retrieval-layer authorization reduces sensitive-information leakage compared to conventional application-layer access control, built as a role-gated Retrieval-Augmented Generation (RAG) system.
-
-7th Semester Major Project, batch: 2027, Cybersecurity Specialization.
+An experimental, role-gated Retrieval-Augmented Generation (RAG) framework evaluating whether retrieval-layer authorization, implemented via Postgres Row-Level Security, reduces sensitive-information leakage in LLM applications compared to conventional application-layer access control.
 
 ---
 
@@ -22,10 +20,11 @@ An experimental framework evaluating whether retrieval-layer authorization reduc
 | Orchestration | LangChain |
 | Vector Database | Supabase (Postgres + pgvector) |
 | Authentication | Supabase Auth (JWT) |
-| Embeddings & Generation | Google AI Studio (Gemini, `text-embedding-004`) |
+| Embeddings | Google AI Studio (Gemini, `gemini-embedding-001`, truncated to 768 dims via MRL) |
+| Generation | Google AI Studio (Gemini) |
 | Fallback LLM | Groq (Llama), rate-limit overflow only |
 | Document Storage | OCI Object Storage |
-| Hosting | Render (backend) · Vercel (frontend) |
+| Hosting | Vercel |
 
 ---
 
@@ -39,16 +38,25 @@ Sentra runs in three switchable configurations for comparison:
 | **Model B** | Application-layer check in FastAPI |
 | **Model C** | Retrieval-layer enforcement via Postgres Row-Level Security *(default)* |
 
-Each configuration is run against a fixed attack query set spanning direct bypass, role impersonation, prompt injection, semantic extraction, cross-domain querying, multi-turn escalation, and fabrication-under-denial — tracked across Unauthorized Retrieval Rate, Retrieval Leakage, Generation Leakage, and Attack Success Rate.
+Each configuration is run against a fixed attack query set spanning direct bypass, role impersonation, prompt injection, semantic extraction, cross-domain querying, multi-turn escalation, and fabrication-under-denial; tracked across `Unauthorized Retrieval Rate`, `Retrieval Leakage`, `Generation Leakage`, `Retrieval Precision`,  and `Attack Success Rate`.
 
 ---
 
-## 👥 User Roles
+## 👥 User Roles & Document Access
 
-- **Admin**: full access across all document categories.
-- **HR**: access to HR-tagged documents only.
-- **Legal**: access to Legal-tagged documents only.
-- **Employee**: access to general/employee-tagged documents only.
+- **Admin**: full access across all departments (HR, Legal, and Public/general).
+- **HR**: HR-tagged documents **plus** Public/general documents.
+- **Legal**: Legal-tagged documents **plus** Public/general documents.
+- **Employee**: Public/general documents only.
+
+### Access Matrix
+
+| User Role | HR Data | Legal Data | Public Data |
+|---|---|---|---|
+| **Admin** | ✅ | ✅ | ✅ |
+| **HR** | ✅ | ❌ | ✅ |
+| **Legal** | ❌ | ✅ | ✅ |
+| **Employee** | ❌ | ❌ | ✅ |
 
 ---
 
@@ -71,10 +79,18 @@ Use these seeded accounts to test role-based access locally:
 
 | Resource | Link |
 |---|---|
-| 📄 Scoping Document | [View](/docs/Scoping_Document.pdf) |
-| 🗓️ Weekly Development Plan | [View](/docs/roadmap/Weekly_Development_Plan.pdf) |
-| 📑 Documentation | [View](/docs/roadmap/Sentra_Project_Documentation_Revised.pdf) |
-| 📄 Requirements | [View](/docs/roadmap/requirements.txt) |
+| 📑 Scoping Document | [View](/docs/Scoping_Document.pdf) |
+| 📄 Requirements | [View](/docs/requirements.txt) |
+| 📋 Corpus Manifest | [View](/docs/corpus_manifest.csv) |
+| 📊 Project Board | [View](https://github.com/users/flash-sagittario/projects/2/) |
+
+--- 
+
+| Milestone | Due | Focus |
+|---|---|---|
+| Month 1 | Sept 30, 2026 | Core RAG + ingestion + JWT auth + retrieval-time filtering (Model C) |
+| Month 2 | Oct 31, 2026 | Web app (upload, chat, dashboards) + cloud deployment + Model A/B switch |
+| Month 3 | Nov 30, 2026 | Audit logging + attack query set + evaluation script/results + report |
 
 ---
 
@@ -85,6 +101,6 @@ Use these seeded accounts to test role-based access locally:
 | [⚙️ Setup Guide](./SETUP.md) | Prerequisites, Supabase setup, environment variables, running the app locally. |
 | [📡 API Reference](./API_REFERENCE.md) | All endpoints: auth, ingestion, retrieval, generation. |
 | [🏗️ Architecture](./ARCHITECTURE.md) | Project structure, RAG pipeline, database schema, Model A/B/C switch logic. |
-| [📝 Decisions & Roadmap](./DECISIONS.md) | Design rationale, known limitations, evaluation plan, future improvements. |
+| [📝 Decisions](./DECISIONS.md) | Design rationale, known limitations, evaluation plan, future improvements. |
 
 ---
