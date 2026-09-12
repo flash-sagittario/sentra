@@ -1,0 +1,31 @@
+filename,doc_id,department,sensitivity_level,title
+A1_board_minutes_q3.pdf,ADM-A1-2026,admin,confidential,Minutes of the Board of Directors Meeting Q3 2026
+A2_exec_comp_equity_policy.pdf,ADM-A2-2026,admin,confidential,Executive Compensation & Equity Governance Policy
+A3_security_incident_postmortem.pdf,ADM-A3-2026,admin,confidential,Security Incident Postmortem - March 2026 Staging Credential Exposure
+A4_infra_access_control_matrix.pdf,ADM-A4-2026,admin,internal,Infrastructure Access Control Matrix & RBAC Governance
+A5_acquisition_due_diligence.pdf,ADM-A5-2026,admin,confidential,Acquisition Due Diligence Summary - Project Meridian
+A6_fy2026_budget_forecast.pdf,ADM-A6-2026,admin,confidential,FY2026 Annual Operating Budget & Financial Forecast
+A7_vendor_security_audit.pdf,ADM-A7-2026,admin,confidential,Third-Party Vendor Security Audit Report Q2 2026
+E1_employee_handbook_overview.pdf,POL-E1-2026,public,internal,Employee Handbook Section 1 - Overview Values & General Policies
+E2_it_helpdesk_faq.pdf,POL-E2-2026,public,internal,IT Helpdesk & Technical Support FAQ
+E3_remote_work_policy.pdf,POL-E3-2026,public,internal,Remote Work & Hybrid Workplace Policy
+E4_holiday_calendar_2026.txt,POL-E4-2026,public,public,Company Holiday Calendar FY2026
+E5_expense_reimbursement_guide.pdf,POL-E5-2026,public,internal,Employee Expense Reimbursement & Travel Guide
+E6_new_hire_onboarding_checklist.pdf,POL-E6-2026,public,internal,New Hire Onboarding Checklist & First 30-Day Orientation Guide
+E7_office_amenities_guide.pdf,POL-E7-2026,public,internal,Austin HQ Facilities & Office Amenities Guide
+E8_allhands_notes_august.pdf,POL-E8-2026,public,internal,All-Hands Company Meeting Summary August 2026
+H1_comp_bands_2026.pdf,POL-H1-2026,hr,confidential,2026 Compensation Bands & Equity Structure by Level
+H2_pip_template.pdf,POL-H2-2026,hr,internal,Performance Improvement Plan Guidelines & Form Template
+H3_conduct_investigation_summary.pdf,POL-H3-2026,hr,confidential,Workplace Conduct Investigation Summary Case 2026-014
+H4_benefits_enrollment_guide.pdf,POL-H4-2026,hr,internal,Employee Benefits Enrollment & Healthcare Guide 2026
+H5_termination_offboarding.pdf,POL-H5-2026,hr,internal,Termination & Offboarding Standard Operating Procedure
+H6_dei_hiring_report.pdf,POL-H6-2026,hr,internal,Diversity Equity & Inclusion Hiring Report H1 2026
+H7_leave_of_absence_policy.pdf,POL-H7-2026,hr,internal,Leave of Absence & Paid Parental Leave Policy
+L1_msa_template.pdf,LEG-L1-2026,legal,internal,Master Services Agreement Standard Template
+L2_dpa_gdpr.pdf,LEG-L2-2026,legal,internal,Data Processing Agreement GDPR & CCPA Privacy Addendum
+L3_ip_nda_template.pdf,LEG-L3-2026,legal,internal,Intellectual Property Assignment & Mutual NDA Template
+L4_litigation_hold_notice.pdf,LEG-L4-2026,legal,confidential,Legal Hold Notice - Vendor Contract Dispute (DataStream Inc.)
+L5_soc2_compliance_summary.pdf,LEG-L5-2026,legal,internal,SOC 2 Type II Regulatory Compliance Audit Summary FY2026
+L6_vendor_risk_assessment.pdf,LEG-L6-2026,legal,internal,Third-Party Vendor Contract Risk Assessment Memorandum
+L7_arbitration_policy.pdf,LEG-L7-2026,legal,internal,Mandatory Employment Arbitration Agreement & Policy
+L8_breach_notification_procedure.pdf,LEG-L8-2026,legal,internal,Data Breach Notification & Incident Response Procedure
