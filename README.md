@@ -10,21 +10,21 @@ An experimental, role-gated Retrieval-Augmented Generation (RAG) framework evalu
 
 ## 🚀 Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend Framework | React 18 |
-| Language | TypeScript |
-| Build Tool | Vite |
-| Styling | Tailwind CSS |
-| Backend Runtime | FastAPI (Python) |
-| Orchestration | LangChain |
-| Vector Database | Supabase (Postgres + pgvector) |
-| Authentication | Supabase Auth (JWT) |
-| Embeddings | Google AI Studio (Gemini, `gemini-embedding-001`, truncated to 768 dims via MRL) |
-| Generation | Google AI Studio (Gemini) |
-| Fallback LLM | Groq (Llama), rate-limit overflow only |
-| Document Storage | OCI Object Storage |
-| Hosting | Vercel |
+| Layer | Technology | Version |
+|---|---|---|
+| Frontend Framework | React | 19.2.8 |
+| Language | TypeScript | 6.0.2 |
+| Build Tool | Vite | 8.2.2 |
+| Styling | Tailwind CSS | 4.3.3 |
+| Backend Runtime | FastAPI (Python) | 0.141.1 |
+| Orchestration | LangChain | 1.4.0 |
+| Vector Database | Supabase (Postgres + pgvector) | supabase-py client 2.31.0 |
+| Authentication | Supabase Auth (JWT) | supabase-auth client 2.31.0 |
+| Embeddings | gemini-embedding-001, truncated to 768 dims via MRL | google-genai SDK 2.23.0 |
+| Generation | Google AI Studio (Gemini) | google-genai SDK 2.23.0 |
+| Fallback LLM | Groq (Llama), rate-limit overflow only | groq SDK 1.7.0 |
+| Document Storage | OCI Object Storage | — |
+| Hosting | Vercel | — |
 
 ---
 
@@ -80,8 +80,10 @@ Use these seeded accounts to test role-based access locally:
 | Resource | Link |
 |---|---|
 | 📑 Scoping Document | [View](/docs/Scoping_Document.pdf) |
-| 📄 Requirements | [View](/docs/requirements.txt) |
-| 📋 Corpus Manifest | [View](/docs/corpus_manifest.csv) |
+| 🗺️ Diagrams | [View](/docs/diagrams/) |
+| 📝 Report | [View](/docs/reports/) |
+| 🖼️ Screenshots | [View](/screenshots/) |
+| 🧪 Postman Collection | [View](/docs/api/) |
 | 📊 Project Board | [View](https://github.com/users/flash-sagittario/projects/2/) |
 
 --- 
