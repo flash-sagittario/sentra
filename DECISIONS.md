@@ -28,6 +28,25 @@ Considered three options: leave it (document the imbalance), split it into two d
 
 ---
 
+## Future Work
+
+### Model override is not environment-gated (TODO before production deployment)
+
+The `/query` endpoint accepts an optional `"model"` field in the request body, allowing per-request selection of Model A, B, or C without editing `.env` or restarting the server. This is intended for local development and the Month 3 evaluation harness (running the attack suite across all three models programmatically).
+
+**Security risk:** in its current form, any authenticated caller can set `"model": "A"` to bypass all access control, regardless of their actual role. This must be fixed before the backend is deployed publicly (W8.1, Render).
+
+**Planned fix:** gate the override behind an environment check, so it is only honored when `ENV != "production"`. In production, the endpoint should silently force Model C regardless of what the request body specifies.
+
+```python
+ENV = os.environ.get("ENV", "development")
+requested_model = payload.get("model", ACCESS_MODEL) if ENV != "production" else "C"
+```
+
+**Status:** not yet implemented. Tracked for completion before W8.1 (backend deployment to Render).
+
+---
+
 ## Corpus Maintenance
 
 When adding a new document to the corpus (Month 2/3 or later):
