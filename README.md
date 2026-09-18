@@ -82,8 +82,9 @@ Use these seeded accounts to test role-based access locally:
 | 📑 Scoping Document | [View](/docs/Scoping_Document.pdf) |
 | 🗺️ Diagrams | [View](/docs/diagrams/) |
 | 📝 Report | [View](/docs/reports/) |
+| 🧪 Tests | [View](/backend/test_results/) |
 | 🖼️ Screenshots | [View](/screenshots/) |
-| 🧪 Postman Collection | [View](/docs/api/) |
+| 🛒 Postman Collection | [View](/docs/api/) |
 | 📊 Project Board | [View](https://github.com/users/flash-sagittario/projects/2/) |
 
 --- 
