@@ -7,25 +7,37 @@
 ## 📁 Project Structure
 
 ```
-ticket-management-system/
-├── frontend/                         # React (Vite) app
+sentra/
+├── frontend/                         # React + TypeScript app (Vite)
 │   ├── src/
 │   │   ├── assets/
+│   │   ├── components/               # Upload UI, chat interface, role-based dashboards
+│   │   └── ...
 │   ├── tailwind.config.js
 │   ├── vite.config.ts
 │   └── package.json
 ├── backend/                          # FastAPI app
-│   ├── venv/                      
-│   ├── .env.example
-│   └── package.json
+│   ├── .env.example                  # Template for required env vars
+│   ├── config.py                     # Loads env vars, ACCESS_MODEL flag, etc.
+│   ├── main.py                       # FastAPI app entrypoint, API routes
+│   ├── ingest.py                     # Document ingestion pipeline (embeds + stores chunks)
+│   ├── corpus_manifest.csv           # Doc metadata: filename, doc_id, department, sensitivity_level, title
+│   ├── corpus/                       # Source documents (PDF) before ingestion
+│   ├── venv/                         # Python virtual environment
+│   ├── __pycache__/
+│   └── test_results/
+│       ├── csv_files/                # Test run outputs (W4.1, W4.2, W4.3, ...)
+│       │   └── ...
+│       └── test_scripts/             # Test runners
+│           ├── get_tokens.sh         # Fetches fresh JWTs for all 4 test roles
+│           └── ...
 ├── docs/
-│   ├── Scoping_Document
-│   ├── diagrams/                     
+│   ├── Scoping_document.pdf
+│   ├── requirements.txt
+│   ├── diagrams/
 │   ├── api/                          # OpenAPI & Postman Collections
-│   ├── roadmap/                      # Timeline and phases
 │   └── reports/                      # Progress reports
 ├── screenshots/                      # UI preview
-│   └── login-preview.png             
 └── README.md
 ```
 
