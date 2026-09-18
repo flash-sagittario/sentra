@@ -8,8 +8,11 @@
 
 ```
 sentra/
-├── frontend/                         # React (Vite) app
+├── frontend/                         # React + TypeScript app (Vite)
 │   ├── src/
+│   │   ├── assets/
+│   │   ├── components/               # Upload UI, chat interface, role-based dashboards
+│   │   └── ...
 │   ├── tailwind.config.js
 │   ├── vite.config.ts
 │   └── package.json
