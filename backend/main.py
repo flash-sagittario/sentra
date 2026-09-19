@@ -6,6 +6,7 @@ import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException
 from google import genai
+from prompts import build_prompt, append_sources
 
 from config import ACCESS_MODEL
 
@@ -17,6 +18,7 @@ SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_PUBLISHABLE_KEY = os.environ["SUPABASE_KEY"]
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")  # only required for Model A/B
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
+GEMINI_MODEL = os.environ["GEMINI_MODEL"]
 
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -94,4 +96,12 @@ async def query_chunks(payload: dict, authorization: str = Header(...)):
 
     # Model A: no filtering at all, whatever comes back goes out (dev-only, insecure by design)
 
-    return {"chunks": chunks, "model": ACCESS_MODEL}
+    prompt = build_prompt(query_text, chunks)
+    try:
+        gen = gemini_client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Generation failed: {e}")
+
+    answer = append_sources(gen.text or "No answer was generated.", chunks)
+
+    return {"answer": answer, "chunks": chunks, "model": ACCESS_MODEL}
