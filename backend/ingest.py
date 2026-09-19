@@ -65,6 +65,7 @@ for row in manifest:
         vector = embed_chunk(chunk_text)
         supabase.table("chunks").insert({
             "document_id": document_id,
+            "filename": filename,
             "content": chunk_text,
             "role": role,
             "embedding": vector
