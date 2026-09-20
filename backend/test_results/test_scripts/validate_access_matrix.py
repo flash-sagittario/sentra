@@ -1,57 +1,34 @@
 """
-Sentra W4.2 - Section 5A Access Matrix Validation
-Issue: #22
+Sentra W4.2 (Issue #22): Section 5A role x domain access matrix, Model C.
 
-Expands on W4.1's 4-role x 4-query check (Issue #21). Tests every role
-against every real domain, with multiple query phrasings per domain, and
-reports a role x domain pass/fail matrix matching the Section 5A design.
+Every role is tested against every domain with 3 phrasings each.
+Case rule (security): status must be 200 and no chunk outside the role's
+allowed tags (Admin: admin/hr/legal/public, HR: hr/public, Legal: legal/public,
+Employee: public). If the role is allowed the domain, some chunk must come back.
 
-Your corpus only has chunks tagged role = admin / hr / legal / public
-(confirmed live). There is no employee-only private domain, employees
-only ever get public chunks. DOMAIN_QUERIES has no "employee" key, and
-the allowed check falls out correctly without a special case.
+Cell rule (reachability): for a domain the role is allowed, at least one of the
+3 phrasings must return a chunk tagged with that domain. This catches a role
+that is silently under-permitted (for example Admin blocked from hr), which a
+leak check alone can never see. One phrasing missing is a retrieval-quality
+note, not an access failure.
 
-Rule under test (Section 5A): a role should only ever receive chunks
-tagged role = <its own role> OR role = 'public'. Everything else is a leak.
-
-Usage:
-   get jwt first for all 4 roles:
-   curl -X POST 'https://<project-ref_id>.supabase.co/auth/v1/token?grant_type=password' \
-  -H "apikey: <publishable_key>" \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@sentra.com","password":"<admin password>"}'
-
-    export ADMIN_JWT=... HR_JWT=... LEGAL_JWT=... EMPLOYEE_JWT=...
-    export SENTRA_API_URL=http://localhost:8000   # optional, defaults to this
+Run from backend/test_results/test_scripts:
+    source get_tokens.sh
     python validate_access_matrix.py
 
-Output:
-    Prints PASS/FAIL per case plus a summary matrix to the terminal.
-    Also writes two files next to the script:
-      - w42_test_matrix_results_<timestamp>.csv   (full per-case log, same
-        shape as your W4.1 CSV, with the full untruncated raw response)
-      - w42_summary_<timestamp>.md                (matrix table, ready to
-        paste into the GitHub issue comment when closing #22)
+Outputs (in ../csv_files/):
+    w4.2_test_matrix_results_<timestamp>.csv
+    w4.2_summary_<timestamp>.md
 """
 
-import os
-import csv
 import json
-import requests
+import sys
 from dataclasses import dataclass
-from datetime import datetime
 
-BASE_URL = os.getenv("SENTRA_API_URL", "http://localhost:8000")
-QUERY_ENDPOINT = f"{BASE_URL}/query"
-
-ROLES = ["admin", "hr", "legal", "employee"]
-
-TEST_TOKENS = {
-    "admin": os.environ["ADMIN_JWT"],
-    "hr": os.environ["HR_JWT"],
-    "legal": os.environ["LEGAL_JWT"],
-    "employee": os.environ["EMPLOYEE_JWT"],
-}
+from sentra_test_common import (
+    ROLES, ALLOWED_TAGS, EXPECTED_MODEL, load_tokens, post_query, chunk_tags,
+    find_leaks, timestamp, write_csv, write_text,
+)
 
 DOMAIN_QUERIES = {
     "admin": [
@@ -75,6 +52,7 @@ DOMAIN_QUERIES = {
         "time off request process",
     ],
 }
+DOMAINS = list(DOMAIN_QUERIES)
 
 
 @dataclass
@@ -86,122 +64,109 @@ class TestCase:
 
 
 def build_matrix():
-    cases = []
-    for role in ROLES:
-        for domain, queries in DOMAIN_QUERIES.items():
-            expect_allowed = (domain == role) or (domain == "public")
-            for query in queries:
-                cases.append(TestCase(role, domain, query, expect_allowed))
-    return cases
+    return [
+        TestCase(role, domain, q, domain in ALLOWED_TAGS[role])
+        for role in ROLES
+        for domain, queries in DOMAIN_QUERIES.items()
+        for q in queries
+    ]
 
 
-def run_query(role: str, query: str):
-    headers = {"Authorization": f"Bearer {TEST_TOKENS[role]}"}
-    resp = requests.post(QUERY_ENDPOINT, json={"query": query}, headers=headers, timeout=30)
-    return resp
-
-
-def chunk_roles(response_json):
-    return [c["role"] for c in response_json.get("chunks", [])]
-
-
-def evaluate(tc: TestCase, returned_roles):
-    allowed = {tc.role, "public"}
-    leaked = [r for r in returned_roles if r not in allowed]
-    if tc.expect_allowed:
-        passed = len(returned_roles) > 0 and not leaked
-    else:
-        passed = not leaked
-    return passed, leaked
+def cell_status(role, domain, results):
+    cell = [r for r in results if r["tc"].role == role and r["tc"].domain == domain]
+    if not all(r["passed"] for r in cell):
+        return "F(fail)"
+    if domain in ALLOWED_TAGS[role] and not any(r["hit"] for r in cell):
+        return "F(no hit)"
+    return "P"
 
 
 def main():
+    tokens = load_tokens()
     cases = build_matrix()
-    results = []
-    csv_rows = []
+    results, rows = [], []
 
     for i, tc in enumerate(cases, start=1):
-        resp = run_query(tc.role, tc.query)
-        data = resp.json()
-        returned_roles = chunk_roles(data)
-        passed, leaked = evaluate(tc, returned_roles)
-        results.append((tc, passed, leaked, returned_roles))
+        status, data = post_query(tokens[tc.role], tc.query)
+        tags = chunk_tags(data)
+        leaked = find_leaks(tc.role, tags)
+        passed = status == 200 and not leaked and (not tc.expect_allowed or len(tags) > 0)
+        hit = tc.domain in tags
+        results.append({"tc": tc, "passed": passed, "leaked": leaked, "tags": tags, "hit": hit})
 
-        status = "PASS" if passed else "FAIL"
-        print(f"[{status}] role={tc.role:<9} domain={tc.domain:<9} "
-              f"expect_allowed={tc.expect_allowed} query={tc.query!r}")
-        if leaked:
-            print(f"         leaked roles: {leaked}")
-
-        csv_rows.append({
+        label = "PASS" if passed else "FAIL"
+        print(f"[{label}] role={tc.role:<8} domain={tc.domain:<7} allowed={tc.expect_allowed!s:<5} "
+              f"status={status} chunks={tags} query={tc.query!r}")
+        rows.append({
             "case_id": f"W4.2-{i:02d}",
             "role": tc.role,
             "domain": tc.domain,
             "query": tc.query,
             "expect_allowed": tc.expect_allowed,
-            "http_status": resp.status_code,
-            "result": status,
-            "leaked_roles": ";".join(leaked) if leaked else "",
-            "returned_roles": ";".join(returned_roles),
-            "raw_response": json.dumps(data),  # full, not truncated
+            "http_status": status,
+            "model": data.get("model", ""),
+            "result": label,
+            "leaked_roles": ";".join(leaked),
+            "returned_roles": ";".join(tags),
+            "domain_chunk_returned": hit if tc.expect_allowed else "",
+            "raw_response": json.dumps(data),
         })
 
     total = len(results)
-    passed_count = sum(1 for _, p, _, _ in results if p)
-    print(f"\n{passed_count}/{total} passed.")
+    passed_count = sum(1 for r in results if r["passed"])
+    cells = {(role, d): cell_status(role, d, results) for role in ROLES for d in DOMAINS}
+    bad_cells = {k: v for k, v in cells.items() if v != "P"}
 
-    # Role x domain summary matrix
-    matrix_lines = []
-    header = "role".ljust(10) + "".join(d.ljust(10) for d in DOMAIN_QUERIES)
-    matrix_lines.append(header)
-    matrix_cells = {}
+    print(f"\n{passed_count}/{total} cases passed.")
+    print("\nSection 5A matrix (P = all phrasings safe and, where allowed, domain reachable):")
+    print("role".ljust(10) + "".join(d.ljust(12) for d in DOMAINS))
     for role in ROLES:
-        row = role.ljust(10)
-        for domain in DOMAIN_QUERIES:
-            cell_results = [p for tc, p, _, _ in results if tc.role == role and tc.domain == domain]
-            cell = "P" if all(cell_results) else "F"
-            matrix_cells[(role, domain)] = cell
-            row += cell.ljust(10)
-        matrix_lines.append(row)
+        print(role.ljust(10) + "".join(cells[(role, d)].ljust(12) for d in DOMAINS))
 
-    print("\nSection 5A matrix summary (P = all phrasings passed, F = at least one failed):")
-    for line in matrix_lines:
-        print(line)
+    print(f"Matrix cells passing: {len(cells) - len(bad_cells)}/{len(cells)}")
+    if bad_cells:
+        print("FAILED CELLS: " + ", ".join(f"{role}/{d}={v}" for (role, d), v in bad_cells.items()))
 
-    failures = [r for r in results if not r[1]]
+    misses = [r for r in results if r["tc"].expect_allowed and not r["hit"] and r["passed"]]
+    if misses:
+        print("\nRetrieval notes (allowed, no leak, but this phrasing returned no chunk of its own domain):")
+        for r in misses:
+            print(f"  role={r['tc'].role} domain={r['tc'].domain} query={r['tc'].query!r} got={r['tags']}")
+
+    ts = timestamp()
+    csv_path = write_csv(f"w4.2_test_matrix_results_{ts}.csv", rows)
+
+    md = [
+        "# W4.2 - Section 5A Access Matrix Validation (Model C, corrected)\n",
+        f"Run: {ts}, model: {EXPECTED_MODEL}\n",
+        f"**{passed_count}/{total} cases passed. {len(cells) - len(bad_cells)}/{len(cells)} matrix cells passed.**\n",
+        "P = every phrasing had no leak and, where the role is allowed the domain, at least one phrasing "
+        "returned a chunk of that domain.\n",
+        "| Role | " + " | ".join(DOMAINS) + " |",
+        "|------|" + "------|" * len(DOMAINS),
+    ]
+    for role in ROLES:
+        md.append(f"| {role} | " + " | ".join(cells[(role, d)] for d in DOMAINS) + " |")
+    failures = [r for r in results if not r["passed"]]
+    if bad_cells:
+        md.append("\n## Failed cells\n")
+        for (role, d), v in bad_cells.items():
+            md.append(f"- {role} / {d}: {v}")
     if failures:
-        print("\nFailure detail:")
-        for tc, _, leaked, returned in failures:
-            print(f"  role={tc.role} domain={tc.domain} query={tc.query!r} leaked={leaked}")
-
-    # --- write output files ---
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    csv_path = f"w42_test_matrix_results_{ts}.csv"
-    with open(csv_path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=list(csv_rows[0].keys()))
-        writer.writeheader()
-        writer.writerows(csv_rows)
-
-    md_path = f"w42_summary_{ts}.md"
-    with open(md_path, "w") as f:
-        f.write(f"# W4.2 - Section 5A Access Matrix Validation\n\n")
-        f.write(f"Run: {ts}\n\n")
-        f.write(f"**{passed_count}/{total} cases passed.**\n\n")
-        f.write("| Role | " + " | ".join(DOMAIN_QUERIES) + " |\n")
-        f.write("|------|" + "------|" * len(DOMAIN_QUERIES) + "\n")
-        for role in ROLES:
-            row_cells = [matrix_cells[(role, d)] for d in DOMAIN_QUERIES]
-            f.write(f"| {role} | " + " | ".join(row_cells) + " |\n")
-        if failures:
-            f.write("\n## Failures\n\n")
-            for tc, _, leaked, returned in failures:
-                f.write(f"- role={tc.role}, domain={tc.domain}, query={tc.query!r}, leaked={leaked}\n")
-        else:
-            f.write("\nNo leaks detected across any role/domain combination.\n")
+        md.append("\n## Failures\n")
+        for r in failures:
+            md.append(f"- role={r['tc'].role}, domain={r['tc'].domain}, query={r['tc'].query!r}, leaked={r['leaked']}")
+    else:
+        md.append("\nNo leaks detected across any role/domain combination.")
+    if misses:
+        md.append("\n## Retrieval notes (not access failures)\n")
+        for r in misses:
+            md.append(f"- role={r['tc'].role}, domain={r['tc'].domain}, query={r['tc'].query!r}, got={r['tags']}")
+    md_path = write_text(f"w4.2_summary_{ts}.md", "\n".join(md) + "\n")
 
     print(f"\nWrote {csv_path}")
     print(f"Wrote {md_path}")
+    sys.exit(0 if not failures and not bad_cells else 1)
 
 
 if __name__ == "__main__":
