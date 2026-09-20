@@ -6,6 +6,7 @@ import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException
 from google import genai
+from prompts import build_prompt, append_sources
 
 from config import ACCESS_MODEL
 
@@ -17,19 +18,29 @@ SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_PUBLISHABLE_KEY = os.environ["SUPABASE_KEY"]
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")  # only required for Model A/B
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
+GEMINI_MODEL = os.environ["GEMINI_MODEL"]
 
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 
+# Section 5A access matrix: which chunk tags each role may read.
+# Must match backend/sql/rls_chunks_policy.sql.
+ALLOWED_TAGS = {
+    "admin": {"admin", "hr", "legal", "public"},
+    "hr": {"hr", "public"},
+    "legal": {"legal", "public"},
+    "employee": {"public"},
+}
+
 
 def decode_role_from_jwt(access_token: str) -> str:
-    """Read the role claim out of the JWT payload without verifying the
-    signature. Safe here: Supabase already validated this token at login,
-    we're only reading a claim, not using it to authenticate anything."""
+    """Read the role claim from the JWT payload WITHOUT verifying the
+    signature. Reads app_metadata (admin-only) to match the RLS policy,
+    never user_metadata (user-editable)."""
     try:
         payload_b64 = access_token.split(".")[1]
         padded = payload_b64 + "=" * (-len(payload_b64) % 4)
         payload = json.loads(base64.urlsafe_b64decode(padded))
-        return payload.get("user_metadata", {}).get("role", "")
+        return payload.get("app_metadata", {}).get("role", "")
     except Exception:
         raise HTTPException(status_code=401, detail="Could not read role from token")
 
@@ -90,8 +101,17 @@ async def query_chunks(payload: dict, authorization: str = Header(...)):
         # Application-layer enforcement: filter to the caller's role (or
         # public docs) in Python, then trim back down to the usual top 5.
         user_role = decode_role_from_jwt(access_token)
-        chunks = [c for c in chunks if c.get("role") in (user_role, "public")][:5]
+        allowed = ALLOWED_TAGS.get(user_role, {"public"})
+        chunks = [c for c in chunks if c.get("role") in allowed][:5]
 
     # Model A: no filtering at all, whatever comes back goes out (dev-only, insecure by design)
 
-    return {"chunks": chunks, "model": ACCESS_MODEL}
+    prompt = build_prompt(query_text, chunks)
+    try:
+        gen = gemini_client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Generation failed: {e}")
+
+    answer = append_sources(gen.text or "No answer was generated.", chunks)
+
+    return {"answer": answer, "chunks": chunks, "model": ACCESS_MODEL}
