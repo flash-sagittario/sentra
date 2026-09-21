@@ -1,8 +1,8 @@
 import os
-import base64
-import json
 
 import httpx
+import jwt
+from jwt import PyJWKClient
 from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException
 from google import genai
@@ -32,17 +32,29 @@ ALLOWED_TAGS = {
 }
 
 
+# Public keys used to verify Supabase tokens. Fetched once and cached, so
+# verification adds no network call per request.
+_jwks_client = PyJWKClient(
+    f"{SUPABASE_URL}/auth/v1/.well-known/jwks.json",
+    headers={"apikey": SUPABASE_PUBLISHABLE_KEY},
+)
+
+
 def decode_role_from_jwt(access_token: str) -> str:
-    """Read the role claim from the JWT payload WITHOUT verifying the
-    signature. Reads app_metadata (admin-only) to match the RLS policy,
-    never user_metadata (user-editable)."""
+    """Verify the JWT signature and expiry, then read the role claim.
+    Reads app_metadata (admin-only) to match the RLS policy, never
+    user_metadata (user-editable)."""
     try:
-        payload_b64 = access_token.split(".")[1]
-        padded = payload_b64 + "=" * (-len(payload_b64) % 4)
-        payload = json.loads(base64.urlsafe_b64decode(padded))
-        return payload.get("app_metadata", {}).get("role", "")
+        signing_key = _jwks_client.get_signing_key_from_jwt(access_token)
+        payload = jwt.decode(
+            access_token,
+            signing_key.key,
+            algorithms=["ES256"],
+            audience="authenticated",
+        )
     except Exception:
-        raise HTTPException(status_code=401, detail="Could not read role from token")
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    return payload.get("app_metadata", {}).get("role", "")
 
 
 @app.get("/health")
