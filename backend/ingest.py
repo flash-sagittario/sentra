@@ -3,21 +3,20 @@ import os
 from dotenv import load_dotenv
 from google import genai
 from supabase import create_client
-from langchain_community.document_loaders import PyPDFLoader, TextLoader, UnstructuredWordDocumentLoader
+from pypdf import PdfReader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 load_dotenv()
 
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-supabase = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
+supabase = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
 
 def load_doc(path):
-    if path.endswith(".pdf"):
-        return PyPDFLoader(path).load()
-    elif path.endswith(".docx"):
-        return UnstructuredWordDocumentLoader(path).load()
-    else:
-        return TextLoader(path).load()
+    # PDF only (Scoping Document FR-8). Other formats are future work.
+    if not path.lower().endswith(".pdf"):
+        raise ValueError("only PDF files are supported (FR-8)")
+    reader = PdfReader(path)
+    return [page.extract_text() or "" for page in reader.pages]
 
 def embed_chunk(text):
     result = client.models.embed_content(
@@ -50,7 +49,7 @@ for row in manifest:
         print(f"  !! FAILED to load {filename}: {e}")
         continue
 
-    full_text = "\n".join(p.page_content for p in pages)
+    full_text = "\n".join(pages)
 
     # Insert the document row, capture the generated id
     doc_insert = supabase.table("documents").insert({
