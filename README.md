@@ -9,18 +9,21 @@ An experimental, role-gated Retrieval-Augmented Generation (RAG) framework evalu
 | Layer | Technology | Version |
 |---|---|---|
 | Frontend Framework | React | 19.2.8 |
-| Language | TypeScript | 6.0.2 |
+| Language (Frontend) | TypeScript | 6.0.3 |
 | Build Tool | Vite | 8.2.2 |
 | Styling | Tailwind CSS | 4.3.3 |
-| Backend Runtime | FastAPI (Python) | 0.141.1 |
-| Orchestration | LangChain | 1.4.0 |
-| Vector Database | Supabase (Postgres + pgvector) | supabase-py client 2.31.0 |
-| Authentication | Supabase Auth (JWT) | supabase-auth client 2.31.0 |
-| Embeddings | gemini-embedding-001, truncated to 768 dims via MRL | google-genai SDK 2.23.0 |
-| Generation | Google AI Studio (Gemini) | google-genai SDK 2.23.0 |
-| Fallback LLM | Groq (Llama), rate-limit overflow only | groq SDK 1.7.0 |
-| Document Storage | OCI Object Storage | — |
-| Hosting | Vercel | — |
+| Language (Backend) | Python | 3.12 |
+| Backend Framework | FastAPI | 0.141.1 |
+| Server | Uvicorn | 0.52.4 |
+| Text Splitting | langchain-text-splitters (RecursiveCharacterTextSplitter) | 1.1.2 |
+| PDF Parsing | pypdf (PdfReader, used directly) | 6.18.1 |
+| Vector Database | Supabase (Postgres + pgvector) | pgvector 0.8.2, supabase-py 2.31.0 |
+| Authentication | Supabase Auth (JWT) | supabase-auth 2.31.0 |
+| Embeddings | gemini-embedding-001, truncated to 768 dims via MRL | google-genai 2.23.0 |
+| Generation | gemini-3.5-flash-lite (Google AI Studio) | google-genai 2.23.0 |
+| Config | python-dotenv | 1.2.3 |
+| Document Storage | OCI Object Storage | - |
+| Hosting | Vercel | - |
 
 ---
 
@@ -40,19 +43,23 @@ Each configuration is run against a fixed attack query set spanning direct bypas
 
 ## 👥 User Roles & Document Access
 
-- **Admin**: full access across all departments (HR, Legal, and Public/general).
+- **Admin**: full access across all departments (Admin, HR, Legal, and Public/general).
 - **HR**: HR-tagged documents **plus** Public/general documents.
 - **Legal**: Legal-tagged documents **plus** Public/general documents.
 - **Employee**: Public/general documents only.
 
 ### Access Matrix
 
-| User Role | HR Data | Legal Data | Public Data |
-|---|---|---|---|
-| **Admin** | ✅ | ✅ | ✅ |
-| **HR** | ✅ | ❌ | ✅ |
-| **Legal** | ❌ | ✅ | ✅ |
-| **Employee** | ❌ | ❌ | ✅ |
+| User Role | Admin Data | HR Data | Legal Data | Public Data |
+|---|---|---|---|---|
+| **Admin** | ✅ | ✅ | ✅ | ✅ |
+| **HR** | ❌ | ✅ | ❌ | ✅ |
+| **Legal** | ❌ | ❌ | ✅ | ✅ |
+| **Employee** | ❌ | ❌ | ❌ | ✅ |
+
+Admin-tagged documents (such as the vendor contract approval process) are visible to Admin only. Access is enforced inside the database with Row-Level Security.
+
+**Verified on Model C:** the access-control tests W4.1 to W4.3 pass (16/16, 48/48 and 19/19, no leaks).
 
 ---
 
@@ -97,9 +104,9 @@ Use these seeded accounts to test role-based access locally:
 
 | Doc | Covers |
 |---|---|
-| [⚙️ Setup Guide](./SETUP.md) | Prerequisites, Supabase setup, environment variables, running the app locally. |
-| [📡 API Reference](./API_REFERENCE.md) | All endpoints: auth, ingestion, retrieval, generation. |
-| [🏗️ Architecture](./ARCHITECTURE.md) | Project structure, RAG pipeline, database schema, Model A/B/C switch logic. |
-| [📝 Decisions](./DECISIONS.md) | Design rationale, known limitations, evaluation plan, future improvements. |
+| [⚙️ Setup Guide](./SETUP.md) | Prerequisites, environment variables, database setup, ingestion, running the backend, and running the tests. |
+| [📡 API Reference](./API_REFERENCE.md) | The `/health` and `/query` endpoints: authentication, request and response, status codes, and access behavior. |
+| [🏗️ Architecture](./ARCHITECTURE.md) | Project structure, pipeline status, query flow, database schema, Model A/B/C comparison, and test structure. |
+| [📝 Decisions](./DECISIONS.md) | Design rationale, deviations from the scoping document, known limitations, and future work. |
 
 ---
