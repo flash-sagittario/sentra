@@ -92,7 +92,7 @@ Shape only, the values are illustrative:
 
 | Field | Meaning |
 |---|---|
-| `answer` | The generated answer, with the source files listed. |
+| `answer` | The generated answer, with the source files listed. When nothing relevant is found, it is the fixed sentence `I could not find this in the documents available to your role.` with no source list. |
 | `chunks` | The chunks used to build the answer, nearest first. |
 | `chunks[].role` | The chunk's tag: `admin`, `hr`, `legal` or `public`. |
 | `chunks[].similarity` | Cosine similarity between the question and the chunk. Higher is closer. |
@@ -135,6 +135,7 @@ What each role can receive in `chunks`:
 
 - There is **no `403` for restricted content.** A question about a domain the role cannot see returns `200`, with the same JSON keys as any other response, built only from chunks the role is allowed to see. Nothing in the response reveals that restricted content exists. This was confirmed by the W4.3 tests.
 - Retrieval has no similarity floor, so a question with no relevant content also returns 5 chunks from the caller's allowed set.
+- A question with no matching content and a question about restricted content get the same fixed answer sentence, with no source list. Under Model B, `chunks` can be an empty list when the role filter removes everything, and the fixed sentence is returned without calling the language model.
 - Each request is independent. No conversation history is sent or stored, and the role is checked again on every call.
 - The client cannot change how many chunks are returned.
 - A token with a forged or altered role is rejected. Model B verifies the token signature in FastAPI. Model C passes the token to Supabase, which verifies it.
@@ -147,7 +148,7 @@ What each role can receive in `chunks`:
 |---|---|
 | Document upload endpoint | FR-2, FR-3 |
 | Delete or replace a document | FR-14 |
-| Audit log and an admin view of it | FR-7, FR-10, FR-15 |
+| Audit log and an admin view of it | FR-7, FR-10 |
 | CORS configuration for browser access from the frontend | Needed before the chat UI calls `/query` |
 | Role-scope caching (validate and cache the role's permitted scope right after login) | FR-12 |
 

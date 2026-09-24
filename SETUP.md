@@ -201,6 +201,8 @@ source get_tokens.sh
 python w4.1_test_matrix.py
 python validate_access_matrix.py
 python validate_no_content_vs_access_denied.py
+python w5.3_validate_answer_wording.py
+python validate_no_content_handling.py
 ```
 
 | Script | Issue | Cases | Expected result |
@@ -208,6 +210,8 @@ python validate_no_content_vs_access_denied.py
 | `w4.1_test_matrix.py` | #21 | 16 | `16/16 passed.` |
 | `validate_access_matrix.py` | #22 | 48 | `48/48 cases passed.`, `Matrix cells passing: 16/16` |
 | `validate_no_content_vs_access_denied.py` | #23 | 19 | `19/19 passed.`, `IDENTICAL SHAPE: YES` |
+| `w5.3_validate_answer_wording.py` | #28 | 19 | `19/19 passed.` |
+| `validate_no_content_handling.py` | #29 | 19 | `19/19 passed.`, `Identical response keys across categories: YES` |
 
 Each script writes a `.csv` (one row per case) and a summary `.md` to `backend/test_results/csv_files/`, named with a timestamp. Exit code is 0 when everything passes and 1 otherwise.
 

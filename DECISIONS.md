@@ -32,7 +32,12 @@ The request body has no `model` field. The `ACCESS_MODEL` setting selects Model 
 Model B checks the signature and expiry of the login token itself, so it does not trust the role claim inside an unverified token. Verification happens locally instead of through a Supabase call, so Model B does not pay a network round trip that Model C does not. This keeps the latency comparison (RQ4) fair.
 
 ### Restricted questions get the same response as empty results
-The API does not return a distinct "access denied" message. A question that matches nothing and a question that only matches content the caller cannot see get the same kind of response, with the same shape. A distinct denial would itself confirm that restricted content exists. This is a deliberate design choice.
+The API does not return a distinct "access denied" message. A question that matches nothing and a question that only matches content the caller cannot see get the same response: the same status, the same shape and the same answer sentence. A distinct denial would itself confirm that restricted content exists. This is a deliberate design choice (FR-6, FR-15).
+
+The refusal sentence lives in one constant in the backend, and the code guarantees it rather than relying on the model to word it. If no chunks remain after filtering, the backend answers with the sentence directly and does not call the model. If the model returns nothing, or adds words around a refusal, the backend still returns the exact sentence. Automated tests check that every no-content and restricted case returns this exact sentence, with no source list and the same response keys.
+
+### No similarity cutoff for "no content"
+The database search always returns the closest chunks the caller may see, so an unrelated question still gets results and "nothing relevant" cannot be detected from an empty result. A similarity cutoff was considered and measured. On this corpus, real questions scored roughly 0.65 to 0.75 and unrelated questions roughly 0.65 to 0.70, so the ranges overlap and any cutoff that blocked the unrelated ones would also reject real questions. All 30 documents are about one company, which keeps scores in a narrow band. The model therefore judges relevance from the retrieved chunks, and the code guarantees the refusal text (see the decision above). The measurement is specific to this corpus and chunk setting, so it should be repeated if either changes.
 
 ### Chunk size is counted in characters
 `RecursiveCharacterTextSplitter` counts characters unless given a token counter. The pipeline uses 800 characters with 100 overlap (roughly 200 tokens). Ingestion and all access-control tests were verified on this setting, so the project documents say characters. Changing it means re-ingesting the corpus and rerunning the tests.
@@ -54,12 +59,15 @@ Considered three options: leave it (document the imbalance), split it into two d
 - No statistical significance testing across evaluation runs (explicitly out of scope, see Scoping Document Section 11).
 - Field or chunk-level encryption tied to role is deferred to future work. Encryption at rest plus RBAC and RLS-enforced retrieval is the current security thesis.
 - Model B can return fewer than 5 chunks, while Model C always returns 5 permitted chunks. This affects the Precision@5 comparison and will be covered in the threats-to-validity note.
+- Because relevance is judged by the model, every unrelated question still costs one generation call.
+- Similarity scores overlap between relevant and unrelated questions on this single-domain corpus, so no score cutoff is used. See "No similarity cutoff for no content" above.
 
 ---
 
 ## Future Work
 
 - Count chunk size in tokens instead of characters. This needs a re-ingest and a rerun of the access-control tests.
+- Detect "no content" more reliably, for example with a reranker or a structured found/not-found flag from the model. A score cutoff is worth revisiting only if the corpus grows or covers several domains.
 - Field or chunk-level encryption tied to role.
 
 ---

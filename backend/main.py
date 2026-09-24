@@ -9,6 +9,7 @@ from google import genai
 from prompts import build_prompt, append_sources
 
 from config import ACCESS_MODEL
+from prompts import build_prompt, append_sources, NO_INFO_REPLY
 
 load_dotenv()
 
@@ -118,12 +119,17 @@ async def query_chunks(payload: dict, authorization: str = Header(...)):
 
     # Model A: no filtering at all, whatever comes back goes out (dev-only, insecure by design)
 
+    if not chunks:
+        return {"answer": NO_INFO_REPLY, "chunks": [], "model": ACCESS_MODEL}
+ 
     prompt = build_prompt(query_text, chunks)
     try:
         gen = gemini_client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Generation failed: {e}")
 
-    answer = append_sources(gen.text or "No answer was generated.", chunks)
+    answer = append_sources(gen.text or NO_INFO_REPLY, chunks)
+    if NO_INFO_REPLY in answer:
+        answer = NO_INFO_REPLY
 
     return {"answer": answer, "chunks": chunks, "model": ACCESS_MODEL}
