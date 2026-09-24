@@ -20,7 +20,7 @@ sentra/
 │   ├── .env.example                  # Template for required env vars
 │   ├── config.py                     # Loads env vars, validates the ACCESS_MODEL flag
 │   ├── main.py                       # FastAPI app: /health and /query, Model A/B/C logic
-│   ├── prompts.py                    # Builds the LLM prompt and appends the source list
+│   ├── prompts.py                    # Builds the LLM prompt, holds the fixed no-content reply, appends sources
 │   ├── ingest.py                     # Ingestion: PDF -> chunks -> embeddings -> Supabase
 │   ├── requirements.txt              # Python dependencies (pinned)
 │   ├── corpus_manifest.csv           # Doc metadata: filename, doc_id, department, sensitivity_level, title
@@ -80,11 +80,15 @@ flowchart TD
     C -->|"C"| D["Call match_chunks with the user's JWT<br/>Postgres RLS filters rows, top 5"]
     C -->|"B"| E["Verify the token signature, read the role<br/>Call match_chunks with the service key<br/>top 20, FastAPI keeps allowed roles, top 5"]
     C -->|"A"| F["Call match_chunks with the service key<br/>top 5, no filtering"]
-    D --> G["Build the prompt from the chunks"]
-    E --> G
-    F --> G
+    D --> J{"Any chunks left?"}
+    E --> J
+    F --> J
+    J -->|"No"| K["Return the fixed no-content reply<br/>Gemini is not called"]
+    J -->|"Yes"| G["Build the prompt from the chunks"]
     G --> H["Gemini generates the answer"]
-    H --> I["Return answer, chunks and model"]
+    H --> L["Refusals become the exact fixed sentence"]
+    L --> I["Return answer, chunks and model"]
+    K --> I
 ```
 
 Model C is the design under test: restricted rows are filtered inside the database, so they never reach the backend or the language model.
