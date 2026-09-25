@@ -2,6 +2,7 @@
 backend/venv/
 backend/__pycache__/
 *.pyc
+*.jsonl
 
 # Node
 frontend/node_modules/
