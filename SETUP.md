@@ -1,4 +1,4 @@
-[🏠 Home](./README.md) · [⚙️ Setup](./SETUP.md) · [📡 API Reference](./API_REFERENCE.md) · [🏗️ Architecture](./ARCHITECTURE.md) · [📝 Decisions](./DECISIONS.md)
+[🏠 Home](./README.md) · [⚙️ Setup](./SETUP.md) · [📡 API Reference](./API_REFERENCE.md) · [🏗️ Architecture](./ARCHITECTURE.md) · [🧪 Testing](./TESTING.md) · [📝 Decisions](./DECISIONS.md)
 
 ---
 
@@ -188,51 +188,5 @@ Set `ACCESS_MODEL` in `.env` and restart the server. The model is chosen once pe
 | C | Retrieval-layer enforcement through Postgres RLS. | None. Default. |
 
 The same prompt and the same generation model are used for all three, so differences in results come from the authorization layer.
-
----
-
-## ✅ Run the Tests
-
-**Access-control tests (Model C).** They log in as the four roles, send questions to `/query`, and check every returned chunk against the Section 5A matrix. The backend must be running with `ACCESS_MODEL=C`.
-
-```bash
-cd backend/test_results/test_scripts
-source get_tokens.sh
-python w4.1_test_matrix.py
-python validate_access_matrix.py
-python validate_no_content_vs_access_denied.py
-python w5.3_validate_answer_wording.py
-python validate_no_content_handling.py
-```
-
-| Script | Issue | Cases | Expected result |
-|---|---|---|---|
-| `w4.1_test_matrix.py` | #21 | 16 | `16/16 passed.` |
-| `validate_access_matrix.py` | #22 | 48 | `48/48 cases passed.`, `Matrix cells passing: 16/16` |
-| `validate_no_content_vs_access_denied.py` | #23 | 19 | `19/19 passed.`, `IDENTICAL SHAPE: YES` |
-| `w5.3_validate_answer_wording.py` | #28 | 19 | `19/19 passed.` |
-| `validate_no_content_handling.py` | #29 | 19 | `19/19 passed.`, `Identical response keys across categories: YES` |
-
-Each script writes a `.csv` (one row per case) and a summary `.md` to `backend/test_results/csv_files/`, named with a timestamp. Exit code is 0 when everything passes and 1 otherwise.
-
-Before any query, each script checks that the four tokens are valid, carry the right role, and have at least 10 minutes left, and it stops if the API reports a model other than `C`. If it stops, run `source get_tokens.sh` again.
-
----
-
-## 🛠️ Troubleshooting
-
-| Problem | Cause and fix |
-|---|---|
-| `KeyError: 'GEMINI_MODEL'` on startup | Add `GEMINI_MODEL` to `.env`. |
-| `KeyError: 'SUPABASE_SERVICE_KEY'` when running `ingest.py` | Add the service key to `.env`. |
-| `new row violates row-level security policy` during ingestion | The script is using a public key. Check that `ingest.py` reads `SUPABASE_SERVICE_KEY`. |
-| `ModuleNotFoundError: No module named 'pypdf'` (or any other package) | The venv is not active or dependencies are missing. Run `source venv/Scripts/activate`, then `pip install -r requirements.txt` from `backend/`. |
-| `401` from `/query` | The token expired. Run `get_tokens.sh` again. |
-| Test script: `Cannot start the run: ... expires in N min` | Run `source get_tokens.sh` in the same terminal, then re-run. |
-| Test script: `Model mismatch` | Set `ACCESS_MODEL` in `.env` to match `TEST_ACCESS_MODEL` (default `C`) and restart the server. |
-| `500 SUPABASE_SERVICE_KEY not configured` | You are on Model A or B without the service key. Add it, or switch to Model C. |
-| `503 Generation failed` | Usually a Gemini rate limit or a wrong model name. Wait, or check `GEMINI_MODEL`. |
-| Every answer is "I could not find this..." | Check that ingestion ran and that the top chunks are relevant to the question. |
-| `chunks.filename` is empty | Run `add_chunk_filename.sql`. It backfills existing rows; no re-ingest is needed. |
 
 ---

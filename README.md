@@ -1,4 +1,4 @@
-# 🛡️ Sentra (SecureRAG)
+<img src="./frontend/public/sentra-logo.svg" height="28" alt="Sentra (SecureRAG)"/>
 
 An experimental, role-gated Retrieval-Augmented Generation (RAG) framework evaluating whether retrieval-layer authorization, implemented via Postgres Row-Level Security, reduces sensitive-information leakage in LLM applications compared to conventional application-layer access control.
 
@@ -19,7 +19,7 @@ An experimental, role-gated Retrieval-Augmented Generation (RAG) framework evalu
 | PDF Parsing | pypdf (PdfReader, used directly) | 6.18.1 |
 | Vector Database | Supabase (Postgres + pgvector) | pgvector 0.8.2, supabase-py 2.31.0 |
 | Authentication | Supabase Auth (JWT) | supabase-auth 2.31.0 |
-| Embeddings | gemini-embedding-001, truncated to 768 dims via MRL | google-genai 2.23.0 |
+| Embeddings | gemini-embedding-001, truncated to 768 dims via MRL | google-genai 2.23.0 |  
 | Generation | gemini-3.5-flash-lite (Google AI Studio) | google-genai 2.23.0 |
 | Config | python-dotenv | 1.2.3 |
 | Document Storage | OCI Object Storage | - |
@@ -107,6 +107,7 @@ Use these seeded accounts to test role-based access locally:
 | [⚙️ Setup Guide](./SETUP.md) | Prerequisites, environment variables, database setup, ingestion, running the backend, and running the tests. |
 | [📡 API Reference](./API_REFERENCE.md) | The `/health` and `/query` endpoints: authentication, request and response, status codes, and access behavior. |
 | [🏗️ Architecture](./ARCHITECTURE.md) | Project structure, pipeline status, query flow, database schema, Model A/B/C comparison, and test structure. |
+| [🧪 Testing](./TESTING.md) | The full test suite: what each script checks, how to run it, expected results, and the archived iteration. |
 | [📝 Decisions](./DECISIONS.md) | Design rationale, deviations from the scoping document, known limitations, and future work. |
 
 ---
