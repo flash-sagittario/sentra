@@ -149,6 +149,46 @@ source venv/Scripts/activate      # Windows (Git Bash), skip if already active
 uvicorn main:app --reload
 ```
 
+---
+
+## 🖥️ Run the Frontend
+
+Install dependencies:
+
+```bash
+cd frontend
+npm install
+```
+
+Copy the template and reuse the same project's values already in `backend/.env`:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `VITE_SUPABASE_URL` | Yes | Same value as backend's `SUPABASE_URL`. |
+| `VITE_SUPABASE_KEY` | Yes | Same value as backend's `SUPABASE_KEY` (the publishable key). Never the service key, it must not reach the browser. |
+
+```
+VITE_SUPABASE_URL=https://<project-ref>.supabase.co
+VITE_SUPABASE_KEY=sb_publishable_...
+```
+
+
+`.env` is ignored by git, same as the backend's.
+
+Run the dev server:
+
+```bash
+npm run dev
+```
+
+Sign in at the printed local URL with any of the four demo accounts (see [README](./README.md)).
+
+---
+
 ## 🔐 Get Test Tokens
 
 The demo accounts are listed in the [README](./README.md). This script logs in as all four roles and exports a token for each:

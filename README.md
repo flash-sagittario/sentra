@@ -1,4 +1,4 @@
-<img src="./frontend/public/sentra-logo.svg" height="28" alt="Sentra (SecureRAG)"/>
+<img src="./frontend/public/sentra-logo.svg" height="38" alt="Sentra (SecureRAG)"/>
 
 An experimental, role-gated Retrieval-Augmented Generation (RAG) framework evaluating whether retrieval-layer authorization, implemented via Postgres Row-Level Security, reduces sensitive-information leakage in LLM applications compared to conventional application-layer access control.
 
@@ -12,6 +12,8 @@ An experimental, role-gated Retrieval-Augmented Generation (RAG) framework evalu
 | Language (Frontend) | TypeScript | 6.0.3 |
 | Build Tool | Vite | 8.2.2 |
 | Styling | Tailwind CSS | 4.3.3 |
+| Frontend Auth Client | @supabase/supabase-js | 2.117.2 |
+| Validation | Zod | 4.6.5 |
 | Language (Backend) | Python | 3.12 |
 | Backend Framework | FastAPI | 0.141.1 |
 | Server | Uvicorn | 0.52.4 |

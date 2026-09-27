@@ -7,15 +7,24 @@
 ## 📁 Project Structure
 
 ```
-sentra/
-├── frontend/                         # React + TypeScript app (Vite)
-│   ├── src/
-│   │   ├── assets/
-│   │   ├── components/               # Upload UI, chat interface, role-based dashboards
-│   │   └── ...
-│   ├── tailwind.config.js
-│   ├── vite.config.ts
-│   └── package.json
+frontend/                            # React + TypeScript app (Vite)
+├── src/
+│   ├── assets/
+│   ├── components/                   # Upload UI, chat interface, role-based dashboards
+│   ├── lib/
+│   │   └── supabase.ts               # Supabase client, reads VITE_SUPABASE_URL / VITE_SUPABASE_KEY
+│   ├── pages/
+│   │   ├── SignIn.tsx                # Sign-in page, Supabase Auth email/password
+│   │   └── ...                       # more pages to come
+│   ├── App.tsx
+│   ├── index.css                     # global stylesheet & theme tokens
+│   └── main.tsx
+├── .env.example                      # Template for required env vars (VITE_SUPABASE_URL, VITE_SUPABASE_KEY)
+├── index.html
+├── vite.config.ts                    # includes @tailwindcss/vite (Tailwind v4, CSS-first, no config file)
+└── package.json
+```
+```
 ├── backend/                          # FastAPI app
 │   ├── .env.example                  # Template for required env vars
 │   ├── config.py                     # Loads env vars, validates the ACCESS_MODEL flag
