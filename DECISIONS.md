@@ -1,4 +1,4 @@
-[🏠 Home](./README.md) · [⚙️ Setup](./SETUP.md) · [📡 API Reference](./API_REFERENCE.md) · [🏗️ Architecture](./ARCHITECTURE.md) · [📝 Decisions](./DECISIONS.md)
+[🏠 Home](./README.md) · [⚙️ Setup](./SETUP.md) · [📡 API Reference](./API_REFERENCE.md) · [🏗️ Architecture](./ARCHITECTURE.md) · [🧪 Testing](./TESTING.md) · [📝 Decisions](./DECISIONS.md)
 
 ---
 
@@ -51,6 +51,9 @@ The demo corpus (30 documents) has uneven document lengths by design (E1, the Em
 ### E1 (Employee Handbook) length: left as-is, documented rather than rebalanced
 Considered three options: leave it (document the imbalance), split it into two documents along its natural content seam, or trim it back to 1 to 2 pages. Chose to leave it: splitting or trimming risks re-touching a file that already passed content and formatting review, and the length itself is realistic (handbooks are naturally longer than single-purpose HR or Legal memos in real organizations). Addressed instead through the precision@5 and chunk-count-logging decision above, plus a "threats to validity" note planned for the final project report. The note will say that document-length variance measurably affects chunk counts at this corpus scale (N=30) and would diminish at production scale.
 
+### Rule 1 loosened to allow partial answers from context
+The original prompt instruction refused whenever context did not "clearly" contain the answer, "even if only loosely related." This caused over-refusal: valid partial-match answers (for example, a handbook section that addressed a question without using its exact wording) were refused instead of answered. Rule 1 was rewritten to refuse only when the context does not address the question at all, and to allow an answer built from whatever the context does say. The instruction still explicitly forbids the model from mentioning what is missing from an answer, since that would hint that restricted content exists (protects FR-15, see the decision above). Verified by two rounds of testing: W5.5 (issue #30) went from 118 to 124 correct passes after this change, W5.4 (issue #29) is unaffected since it covers genuinely empty results, not partial matches.
+
 ---
 
 ## Known Limitations
@@ -61,6 +64,7 @@ Considered three options: leave it (document the imbalance), split it into two d
 - Model B can return fewer than 5 chunks, while Model C always returns 5 permitted chunks. This affects the Precision@5 comparison and will be covered in the threats-to-validity note.
 - Because relevance is judged by the model, every unrelated question still costs one generation call.
 - Similarity scores overlap between relevant and unrelated questions on this single-domain corpus, so no score cutoff is used. See "No similarity cutoff for no content" above.
+- The partial-answer rule (see "Rule 1 loosened" above) trusts the model's judgment of what counts as "addressing the question." This is not independently verified per-answer, only tested against the fixed W5.5 question set.
 
 ---
 
@@ -83,6 +87,6 @@ When adding a new document to the corpus (Month 2/3 or later):
    ```sql
    select role, count(*) from chunks group by role order by role;
    ```
-5. Re-run the access-control tests (see the Setup guide) if the new document changes what a role can retrieve.
+5. Re-run the access-control tests (see [TESTING.md](./TESTING.md)) if the new document changes what a role can retrieve.
 
 ---
