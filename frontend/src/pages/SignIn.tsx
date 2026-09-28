@@ -1,12 +1,15 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type SubmitEvent } from 'react'
 import { z } from 'zod'
 import { supabase } from '../lib/supabase'
 
 const GENERIC_ERROR = 'Invalid email or password. Please try again.'
 
 const signInSchema = z.object({
-  email: z.string().min(1, 'Enter your email.').email('Enter a valid email address.'),
-  password: z.string().min(1, 'Enter your password.'),
+  email: z.email({
+    error: (issue) =>
+      issue.input === '' ? 'Enter your email.' : 'Enter a valid email address.',
+  }),
+  password: z.string().min(1, { error: 'Enter your password.' }),
 })
 
 const BASE_INPUT_CLASSES =
@@ -104,7 +107,7 @@ export default function SignIn() {
   const [invalidField, setInvalidField] = useState<'email' | 'password' | null>(null)
   const [signedInEmail, setSignedInEmail] = useState<string | null>(null)
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
 
     // Shape/format checks run first, before touching the network.
