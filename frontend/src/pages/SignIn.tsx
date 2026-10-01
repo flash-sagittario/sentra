@@ -1,12 +1,15 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type SubmitEvent } from 'react'
 import { z } from 'zod'
 import { supabase } from '../lib/supabase'
 
 const GENERIC_ERROR = 'Invalid email or password. Please try again.'
 
 const signInSchema = z.object({
-  email: z.string().min(1, 'Enter your email.').email('Enter a valid email address.'),
-  password: z.string().min(1, 'Enter your password.'),
+  email: z.email({
+    error: (issue) =>
+      issue.input === '' ? 'Enter your email.' : 'Enter a valid email address.',
+  }),
+  password: z.string().min(1, { error: 'Enter your password.' }),
 })
 
 const BASE_INPUT_CLASSES =
@@ -104,7 +107,7 @@ export default function SignIn() {
   const [invalidField, setInvalidField] = useState<'email' | 'password' | null>(null)
   const [signedInEmail, setSignedInEmail] = useState<string | null>(null)
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
 
     // Shape/format checks run first, before touching the network.
@@ -138,22 +141,22 @@ export default function SignIn() {
   return (
     <div className="relative min-h-[100dvh] flex flex-col bg-signin-bg text-signin-text font-ui antialiased pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] [color-scheme:dark]">
       <div
-        className="fixed inset-0 overflow-hidden pointer-events-none [-webkit-mask-image:radial-gradient(ellipse_70%_60%_at_50%_45%,#000_15%,transparent_75%)] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_45%,#000_15%,transparent_75%)]"
+        className="max-[450px]:hidden fixed inset-0 overflow-hidden pointer-events-none [-webkit-mask-image:radial-gradient(ellipse_70%_60%_at_50%_45%,#000_15%,transparent_75%)] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_45%,#000_15%,transparent_75%)]"
         aria-hidden="true"
       >
         <div className="absolute -inset-[70px] [background-image:radial-gradient(rgba(255,255,255,0.18)_1.2px,transparent_1.5px)] [background-size:22px_22px] will-change-transform animate-signin-drift motion-reduce:animate-none" />
       </div>
 
       <a
-        className="fixed z-10 inline-flex items-center gap-[9px] text-signin-text no-underline [left:44px] [top:calc(env(safe-area-inset-top,0px)+28px)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:rounded-md focus-visible:outline-signin-text"
+        className="fixed z-10 inline-flex items-center gap-[9px] text-signin-text no-underline [left:44px] max-[450px]:[left:24px] [top:calc(env(safe-area-inset-top,0px)+28px)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:rounded-md focus-visible:outline-signin-text"
         href="#"
       >
         <BrandMark />
         <span className="font-display font-black text-[17px] leading-none relative [top:-0.03em]">sentra</span>
       </a>
 
-      <main className="relative flex-1 flex items-center justify-center py-12 px-6">
-        <div className="w-full max-w-[440px] p-10 bg-signin-card [background-image:repeating-linear-gradient(45deg,rgba(255,255,255,0.035)_0px,rgba(255,255,255,0.035)_1px,transparent_1px,transparent_3px),repeating-linear-gradient(-45deg,rgba(255,255,255,0.035)_0px,rgba(255,255,255,0.035)_1px,transparent_1px,transparent_3px)] border border-signin-border rounded-[20px] shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
+      <main className="relative flex-1 flex items-center justify-center py-12 px-6 max-[450px]:px-0">
+        <div className="w-full max-w-[440px] max-[450px]:max-w-none max-[450px]:rounded-none max-[450px]:border-x-0 max-[450px]:px-6 p-10 bg-signin-card [background-image:repeating-linear-gradient(45deg,rgba(255,255,255,0.035)_0px,rgba(255,255,255,0.035)_1px,transparent_1px,transparent_3px),repeating-linear-gradient(-45deg,rgba(255,255,255,0.035)_0px,rgba(255,255,255,0.035)_1px,transparent_1px,transparent_3px)] border border-signin-border rounded-[20px] shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
           <h1 className="m-0 mb-2.5 text-signin-text font-ui font-bold text-3xl leading-tight tracking-[-0.01em]">Sign in</h1>
           <p className="m-0 mb-[14px] text-signin-text-dim text-base leading-normal max-w-[32ch]">
             Search documents your role can access.

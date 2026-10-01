@@ -19,7 +19,7 @@ FastAPI also serves interactive docs at `/docs` while running locally.
 
 ## 🔐 Authentication
 
-Users log in through Supabase Auth, not through this API. The login returns a JWT (`access_token`), and every `/query` call sends it in the `Authorization` header. The role (`admin`, `hr`, `legal` or `employee`) is read from the token's `app_metadata.role`.
+Users log in through Supabase Auth, not through this API. The login returns a JWT (`access_token`), and every `/query` call sends it in the `Authorization` header. On the frontend, this is handled in one place, `src/lib/api.ts`'s `apiFetch` wrapper, rather than repeated per component; it also signs the user out automatically on a `401`. The role (`admin`, `hr`, `legal` or `employee`) is read from the token's `app_metadata.role`.
 
 Get a token:
 
@@ -149,7 +149,6 @@ What each role can receive in `chunks`:
 | Document upload endpoint | FR-2, FR-3 |
 | Delete or replace a document | FR-14 |
 | Audit log and an admin view of it | FR-7, FR-10 |
-| CORS configuration for browser access from the frontend | Needed before the chat UI calls `/query` |
 | Role-scope caching (validate and cache the role's permitted scope right after login) | FR-12 |
 
 ---
