@@ -8,12 +8,20 @@ from fastapi import FastAPI, Header, HTTPException
 from google import genai
 from prompts import build_prompt, append_sources
 
-from config import ACCESS_MODEL
+from config import ACCESS_MODEL, FRONTEND_ORIGINS
+from fastapi.middleware.cors import CORSMiddleware
 from prompts import build_prompt, append_sources, NO_INFO_REPLY
 
 load_dotenv()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=FRONTEND_ORIGINS,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Authorization", "Content-Type"],
+)
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_PUBLISHABLE_KEY = os.environ["SUPABASE_KEY"]
