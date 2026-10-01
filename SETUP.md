@@ -37,6 +37,7 @@ cp .env.example .env
 | `GEMINI_API_KEY` | Yes | Google AI Studio key. |
 | `GEMINI_MODEL` | Yes | Generation model. Currently `gemini-3.5-flash-lite`. The server will not start without it. |
 | `ACCESS_MODEL` | No | `A`, `B` or `C`. Defaults to `C`. |
+| `FRONTEND_ORIGINS` | No | Comma-separated list of origins allowed to call the API from a browser (CORS). Defaults to `http://localhost:5173`. |
 
 Example `.env`:
 
@@ -47,6 +48,7 @@ SUPABASE_SERVICE_KEY=sb_secret_...
 GEMINI_API_KEY=<your-key>
 GEMINI_MODEL=gemini-3.5-flash-lite
 ACCESS_MODEL=C
+FRONTEND_ORIGINS=http://localhost:5173
 ```
 
 `.env` is ignored by git. Only `.env.example` is committed.
@@ -170,12 +172,13 @@ cp .env.example .env
 |---|---|---|
 | `VITE_SUPABASE_URL` | Yes | Same value as backend's `SUPABASE_URL`. |
 | `VITE_SUPABASE_KEY` | Yes | Same value as backend's `SUPABASE_KEY` (the publishable key). Never the service key, it must not reach the browser. |
+| `VITE_API_URL` | Yes | The backend's base URL, `http://localhost:8000`. Used by `src/lib/api.ts` to call `/query`. |
 
 ```
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
 VITE_SUPABASE_KEY=sb_publishable_...
+VITE_API_URL=http://localhost:8000
 ```
-
 
 `.env` is ignored by git, same as the backend's.
 

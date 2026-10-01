@@ -12,14 +12,15 @@ frontend/                            # React + TypeScript app (Vite)
 │   ├── assets/
 │   ├── components/                   # Upload UI, chat interface, role-based dashboards
 │   ├── lib/
-│   │   └── supabase.ts               # Supabase client, reads VITE_SUPABASE_URL / VITE_SUPABASE_KEY
+│   │   ├── supabase.ts               # Supabase client, reads VITE_SUPABASE_URL / VITE_SUPABASE_KEY
+│   │   └── api.ts                    # apiFetch wrapper: attaches the Supabase JWT to every backend call, signs out on 401
 │   ├── pages/
 │   │   ├── SignIn.tsx                # Sign-in page, Supabase Auth email/password
 │   │   └── ...                       # more pages to come
-│   ├── App.tsx
+│   ├── App.tsx                       # Routes between SignIn and the signed-in view based on Supabase session state
 │   ├── index.css                     # global stylesheet & theme tokens
 │   └── main.tsx
-├── .env.example                      # Template for required env vars (VITE_SUPABASE_URL, VITE_SUPABASE_KEY)
+├── .env.example                      # Template for required env vars (VITE_SUPABASE_URL, VITE_SUPABASE_KEY, VITE_API_URL)
 ├── index.html
 ├── vite.config.ts                    # includes @tailwindcss/vite (Tailwind v4, CSS-first, no config file)
 └── package.json
@@ -80,6 +81,9 @@ The scoping document describes an eight-stage pipeline. Where each stage stands:
 ---
 
 ## 🔍 Query Flow
+
+The frontend's `apiFetch` wrapper attaches the caller's Supabase JWT as `Authorization: Bearer <token>` on every call. 
+`CORSMiddleware` on the backend allows this from the configured `FRONTEND_ORIGINS` origin and handles the browser's preflight `OPTIONS` request before the actual call below.
 
 What happens on `POST /query`:
 

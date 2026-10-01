@@ -28,6 +28,12 @@ A user's role is read from a field that only the server can change, never from a
 ### Access model is set per server start, not per request
 The request body has no `model` field. The `ACCESS_MODEL` setting selects Model A, B or C when the server starts, and the response `model` field only reports that setting. This means a caller cannot switch to a weaker model by changing a request. The Month 3 evaluation harness restarts the server for each model. The public deployment runs Model C only.
 
+### CORS: explicit origin allowlist, no wildcard
+The API is called directly from a browser (`src/lib/api.ts`), so the backend needs a CORS policy or the browser blocks every request before it's sent. The allowed origin is read from `FRONTEND_ORIGINS`, a comma-separated env var, rather than hardcoded or set to `*`. A wildcard origin would let any website call the API from a signed-in user's browser using their session; an explicit allowlist avoids that while keeping deployment a one-line env change (adding the Vercel URL) rather than a code change.
+
+### Chunk content stays in the /query response for now, deferred until audit logging exists
+`chunks[].content` is returned in full on every response, including refusal answers, even though the UI never displays it. This is deliberate rather than an oversight: Section 5D's metrics (Unauthorized Retrieval Rate, Retrieval Leakage, Generation Leakage, Attack Success Rate) are currently computed directly from this field in the live API response, since the audit log table (FR-10) that would otherwise hold this data doesn't exist yet. Stripping it now would remove the evaluation harness's only source of truth for these metrics. Revisit once FR-10's audit logging is built: at that point the evaluation scripts can read from the log instead of the live response, and the response itself can be trimmed, gated to only return chunk content alongside a non-refusal answer, with no loss to Section 5D.
+
 ### Model B verifies the token signature
 Model B checks the signature and expiry of the login token itself, so it does not trust the role claim inside an unverified token. Verification happens locally instead of through a Supabase call, so Model B does not pay a network round trip that Model C does not. This keeps the latency comparison (RQ4) fair.
 
