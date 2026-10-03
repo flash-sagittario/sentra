@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { supabase } from '../lib/supabase'
 
 const GENERIC_ERROR = 'Invalid email or password. Please try again.'
+const ICON_CLASSES = 'absolute left-4 top-1/2 w-[18px] h-[18px] -translate-y-1/2 text-signin-muted pointer-events-none transition-colors duration-150 group-focus-within:text-signin-primary motion-reduce:transition-none'
 
 const signInSchema = z.object({
   email: z.email({
@@ -13,18 +14,18 @@ const signInSchema = z.object({
 })
 
 const BASE_INPUT_CLASSES =
-  'w-full h-[52px] pl-[46px] bg-signin-raised text-signin-text border rounded-xl font-ui font-normal text-base outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-signin-muted motion-reduce:transition-none'
+  'w-full h-[52px] pl-[46px] bg-signin-raised text-signin-text border rounded-xl font-ui font-normal text-base outline-hidden transition-[border-color,box-shadow] duration-150 placeholder:text-signin-muted motion-reduce:transition-none'
 
 function inputStateClasses(isInvalid: boolean) {
   return isInvalid
-    ? 'border-signin-error shadow-[0_0_0_3px_rgba(229,72,77,0.25)]'
-    : 'border-signin-border hover:border-signin-border-strong focus:border-signin-primary focus:shadow-[0_0_0_3px_rgba(255,90,31,0.25)]'
+    ? 'border-signin-error ring-3 ring-signin-error/25'
+    : 'border-signin-border hover:border-signin-border-strong focus:border-signin-primary focus:ring-3 focus:ring-signin-primary/25'
 }
 
 function BrandMark() {
   return (
     <svg className="w-[26px] h-[26px] flex-none" viewBox="16 16 64 64" aria-hidden="true">
-      <circle cx="34" cy="34" r="12.6" fill="#FF5A1F" />
+      <circle cx="34" cy="34" r="12.6" className="fill-signin-primary"/>
       <g fill="none" stroke="#EDEDED" strokeWidth="3.2">
         <circle cx="62" cy="34" r="11" />
         <circle cx="34" cy="62" r="11" />
@@ -37,7 +38,7 @@ function BrandMark() {
 function MailIcon() {
   return (
     <svg
-      className="absolute left-4 top-1/2 w-[18px] h-[18px] -translate-y-1/2 text-signin-muted pointer-events-none transition-colors duration-150 group-focus-within:text-signin-primary motion-reduce:transition-none"
+      className={ICON_CLASSES}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -55,7 +56,7 @@ function MailIcon() {
 function LockIcon() {
   return (
     <svg
-      className="absolute left-4 top-1/2 w-[18px] h-[18px] -translate-y-1/2 text-signin-muted pointer-events-none transition-colors duration-150 group-focus-within:text-signin-primary motion-reduce:transition-none"
+      className={ICON_CLASSES}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -139,24 +140,24 @@ export default function SignIn() {
   }
 
   return (
-    <div className="relative min-h-[100dvh] flex flex-col bg-signin-bg text-signin-text font-ui antialiased pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] [color-scheme:dark]">
+    <div className="relative min-h-[100dvh] flex flex-col bg-signin-bg text-signin-text font-ui antialiased pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] scheme-dark">
       <div
-        className="max-[450px]:hidden fixed inset-0 overflow-hidden pointer-events-none [-webkit-mask-image:radial-gradient(ellipse_70%_60%_at_50%_45%,#000_15%,transparent_75%)] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_45%,#000_15%,transparent_75%)]"
+        className="max-xs:hidden fixed inset-0 overflow-hidden pointer-events-none [mask-image:radial-gradient(ellipse_70%_60%_at_50%_45%,#000_15%,transparent_75%)]"
         aria-hidden="true"
       >
         <div className="absolute -inset-[70px] [background-image:radial-gradient(rgba(255,255,255,0.18)_1.2px,transparent_1.5px)] [background-size:22px_22px] will-change-transform animate-signin-drift motion-reduce:animate-none" />
       </div>
 
       <a
-        className="fixed z-10 inline-flex items-center gap-[9px] text-signin-text no-underline [left:44px] max-[450px]:[left:24px] [top:calc(env(safe-area-inset-top,0px)+28px)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:rounded-md focus-visible:outline-signin-text"
+        className="fixed z-10 inline-flex items-center gap-[9px] text-signin-text no-underline [left:44px] max-xs:[left:24px] [top:calc(env(safe-area-inset-top,0px)+28px)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:rounded-md focus-visible:outline-signin-text"
         href="#"
       >
         <BrandMark />
         <span className="font-display font-black text-[17px] leading-none relative [top:-0.03em]">sentra</span>
       </a>
 
-      <main className="relative flex-1 flex items-center justify-center py-12 px-6 max-[450px]:px-0">
-        <div className="w-full max-w-[440px] max-[450px]:max-w-none max-[450px]:rounded-none max-[450px]:border-x-0 max-[450px]:px-6 p-10 bg-signin-card [background-image:repeating-linear-gradient(45deg,rgba(255,255,255,0.035)_0px,rgba(255,255,255,0.035)_1px,transparent_1px,transparent_3px),repeating-linear-gradient(-45deg,rgba(255,255,255,0.035)_0px,rgba(255,255,255,0.035)_1px,transparent_1px,transparent_3px)] border border-signin-border rounded-[20px] shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
+      <main className="relative flex-1 flex items-center justify-center py-12 px-6 max-xs:px-0">
+        <div className="w-full max-w-[440px] max-xs:max-w-none max-xs:rounded-none max-xs:border-x-0 max-xs:px-6 p-10 bg-signin-card [background-image:repeating-linear-gradient(45deg,rgba(255,255,255,0.035)_0px,rgba(255,255,255,0.035)_1px,transparent_1px,transparent_3px),repeating-linear-gradient(-45deg,rgba(255,255,255,0.035)_0px,rgba(255,255,255,0.035)_1px,transparent_1px,transparent_3px)] border border-signin-border rounded-[20px] shadow-card">
           <h1 className="m-0 mb-2.5 text-signin-text font-ui font-bold text-3xl leading-tight tracking-[-0.01em]">Sign in</h1>
           <p className="m-0 mb-[14px] text-signin-text-dim text-base leading-normal max-w-[32ch]">
             Search documents your role can access.
@@ -211,7 +212,7 @@ export default function SignIn() {
               </div>
             </div>
 
-            <a className="block mb-9 text-signin-text-dim text-sm no-underline hover:text-signin-text hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-signin-text focus-visible:outline-offset-[3px] focus-visible:rounded" href="#">
+            <a className="block mb-9 text-signin-text-dim text-sm no-underline hover:text-signin-text hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-signin-text focus-visible:outline-offset-[3px] focus-visible:rounded-sm" href="#">
               Forgot your password?
             </a>
 
@@ -242,8 +243,8 @@ export default function SignIn() {
 
       {signedInEmail && (
         <div className="fixed inset-0 z-20 flex items-center justify-center p-6 bg-black/55" role="dialog" aria-modal="true" aria-label="Signed in">
-          <div className="w-full max-w-[360px] p-8 text-center bg-signin-card border border-signin-border rounded-[20px] shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
-            <div className="grid place-items-center w-12 h-12 mx-auto mb-[18px] rounded-full bg-[rgba(62,207,142,0.12)] text-signin-success">
+          <div className="w-full max-w-[360px] p-8 text-center bg-signin-card border border-signin-border rounded-[20px] shadow-card">
+            <div className="grid place-items-center w-12 h-12 mx-auto mb-[18px] rounded-full bg-signin-success/12 text-signin-success">
               <CheckIcon />
             </div>
             <p className="m-0 mb-6 text-base text-signin-text">
