@@ -13,7 +13,7 @@ How to run Sentra locally: the FastAPI backend, the Supabase database, and the t
 | Requirement | Notes |
 |---|---|
 | Python | 3.11 or newer (developed on 3.12). |
-| Node.js | Only needed for the frontend. |
+| Node.js | 24 LTS (developed on 24.18). Only needed for the frontend. |
 | Supabase project | Postgres with the `pgvector` extension enabled. |
 | Google AI Studio API key | Used for embeddings and answer generation. |
 | Git Bash (Windows) | The helper scripts are shell scripts. |
@@ -65,6 +65,8 @@ python -m venv venv
 source venv/Scripts/activate      # Windows (Git Bash)
 # source venv/bin/activate        # macOS / Linux
 pip install -r requirements.txt
+`or`
+python -m pip install -r requirements.txt
 ```
 
 Your prompt should now start with `(venv)`. Check that Python comes from the venv:
@@ -149,6 +151,8 @@ cd backend
 source venv/Scripts/activate      # Windows (Git Bash), skip if already active
 # source venv/bin/activate        # macOS / Linux
 uvicorn main:app --reload
+`or`
+python -m uvicorn main:app --reload
 ```
 
 ---
@@ -160,6 +164,8 @@ Install dependencies:
 ```bash
 cd frontend
 npm install
+`or`
+npm ci
 ```
 
 Copy the template and reuse the same project's values already in `backend/.env`:
@@ -193,6 +199,8 @@ Sign in at the printed local URL with any of the four demo accounts (see [README
 ---
 
 ## 🔐 Get Test Tokens
+
+The script calls `python`, so the venv must be active in this terminal (your prompt starts with `(venv)`). A new terminal tab starts without it.
 
 The demo accounts are listed in the [README](./README.md). This script logs in as all four roles and exports a token for each:
 
@@ -231,5 +239,22 @@ Set `ACCESS_MODEL` in `.env` and restart the server. The model is chosen once pe
 | C | Retrieval-layer enforcement through Postgres RLS. | None. Default. |
 
 The same prompt and the same generation model are used for all three, so differences in results come from the authorization layer.
+
+---
+
+## 🛠️ Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `Python was not found; run without arguments to install from the Microsoft Store`, followed by empty JWT warnings. | The venv is not active in this terminal, so `python` can resolve to the Microsoft Store stub. Older versions of `get_tokens.sh` called `python3`, which a Windows venv does not provide. | Run `source venv/Scripts/activate` in `backend/`, check `which python`, then rerun the script. |
+| `bash: .../venv/Scripts/pip: Permission denied`. | The `pip` launcher file is blocked on this machine. | Use `python -m pip` instead of `pip`. | Smart App Control has blocked part of this app |
+| `ModuleNotFoundError` when starting the server. | The packages went into the wrong Python. | Activate the venv, check `which python`, then run `python -m pip install -r requirements.txt`. |
+
+## 🪟 New Windows Machine Notes
+
+- Install Git, Node 24.x and Python 3.12.x before cloning.
+- Clone into a dedicated folder such as `D:\sentra`, never into the root of a drive.
+- Git for Windows 2.56 and later shows `UCRT64` in the prompt instead of `MINGW64`. This is normal.
+- Copy the `.env` files from a secure backup, never through git, email or chat.
 
 ---
