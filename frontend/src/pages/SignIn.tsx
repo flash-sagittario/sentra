@@ -1,6 +1,7 @@
 import { useState, type SubmitEvent } from 'react'
 import { z } from 'zod'
 import { supabase } from '../lib/supabase'
+import BrandLockup from '../components/BrandLockup'
 
 const GENERIC_ERROR = 'Invalid email or password. Please try again.'
 const ICON_CLASSES = 'absolute left-4 top-1/2 w-[18px] h-[18px] -translate-y-1/2 text-signin-muted pointer-events-none transition-colors duration-150 group-focus-within:text-signin-primary motion-reduce:transition-none'
@@ -19,20 +20,7 @@ const BASE_INPUT_CLASSES =
 function inputStateClasses(isInvalid: boolean) {
   return isInvalid
     ? 'border-signin-error ring-3 ring-signin-error/25'
-    : 'border-signin-border hover:border-signin-border-strong focus:border-signin-primary focus:ring-3 focus:ring-signin-primary/25'
-}
-
-function BrandMark() {
-  return (
-    <svg className="w-[26px] h-[26px] flex-none" viewBox="16 16 64 64" aria-hidden="true">
-      <circle cx="34" cy="34" r="12.6" className="fill-signin-primary"/>
-      <g fill="none" stroke="#EDEDED" strokeWidth="3.2">
-        <circle cx="62" cy="34" r="11" />
-        <circle cx="34" cy="62" r="11" />
-        <circle cx="62" cy="62" r="11" />
-      </g>
-    </svg>
-  )
+    : 'border-signin-border-input hover:border-signin-muted focus:border-signin-primary focus:ring-3 focus:ring-signin-primary/25'
 }
 
 function MailIcon() {
@@ -152,8 +140,7 @@ export default function SignIn() {
         className="fixed z-10 inline-flex items-center gap-[9px] text-signin-text no-underline [left:44px] max-xs:[left:24px] [top:calc(env(safe-area-inset-top,0px)+28px)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:rounded-md focus-visible:outline-signin-text"
         href="#"
       >
-        <BrandMark />
-        <span className="font-display font-black text-[17px] leading-none relative [top:-0.03em]">sentra</span>
+        <BrandLockup />
       </a>
 
       <main className="relative flex-1 flex items-center justify-center py-12 px-6 max-xs:px-0">
