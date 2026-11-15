@@ -41,7 +41,7 @@ fetch_token() {
         -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
         -H "Content-Type: application/json" \
         -d "{\"email\":\"${email}\",\"password\":\"${password}\"}" \
-        | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('access_token',''))"
+        | python -c "import sys,json; d=json.load(sys.stdin); print(d.get('access_token',''))"
 }
 
 export ADMIN_JWT="$(fetch_token "${TEST_ADMIN_EMAIL}" "${TEST_ADMIN_PASSWORD}")"

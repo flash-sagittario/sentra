@@ -10,6 +10,7 @@ frontend/dist/
 
 # Environment secrets
 .env*
+!.env.example
 .env.test
 backend/.env
 frontend/.env
