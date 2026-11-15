@@ -1,22 +1,51 @@
 @import "tailwindcss";
 
 @theme {
-  --color-signin-bg: #0a0a0a;
-  --color-signin-card: #101010;
-  --color-signin-raised: #282828;
-  --color-signin-border: #333333;
-  --color-signin-border-strong: #4a4a4a;
-  --color-signin-text: #f5f5f5;
-  --color-signin-text-dim: #a3a3a3;
-  --color-signin-muted: #6b6b6b;
-  --color-signin-primary: #ff5a1f;
-  --color-signin-primary-hover: #cc4819;
-  --color-signin-error: #e5484d;
-  --color-signin-success: #3ecf8e;
+  /* App colors: these hold the values. Use app-* in all new code. */
+  --color-app-bg: #0a0a0a;
+  --color-app-card: #101010;
+  --color-app-raised: #282828;
+  --color-app-border: #333333;
+  --color-app-border-strong: #4a4a4a;
+  --color-app-border-input: #555555;
+  --color-app-text: #f5f5f5;
+  --color-app-text-dim: #a3a3a3;
+  --color-app-muted: #6b6b6b;
+  --color-app-primary: #ff5a1f;
+  --color-app-primary-hover: #cc4819;
+  --color-app-error: #e5484d;
+  --color-app-success: #3ecf8e;
+  --color-app-hover: #1c1c1c;
+  --color-app-user-bubble: #31170d;
+
+  /* Legacy names so SignIn.tsx keeps working. Delete when sign-in moves to app-*. */
+  --color-signin-bg: var(--color-app-bg);
+  --color-signin-card: var(--color-app-card);
+  --color-signin-raised: var(--color-app-raised);
+  --color-signin-border: var(--color-app-border);
+  --color-signin-border-strong: var(--color-app-border-strong);
+  --color-signin-border-input: var(--color-app-border-input);
+  --color-signin-text: var(--color-app-text);
+  --color-signin-text-dim: var(--color-app-text-dim);
+  --color-signin-muted: var(--color-app-muted);
+  --color-signin-primary: var(--color-app-primary);
+  --color-signin-primary-hover: var(--color-app-primary-hover);
+  --color-signin-error: var(--color-app-error);
+  --color-signin-success: var(--color-app-success);
 
   --shadow-card: 0 24px 60px rgba(0, 0, 0, 0.45);
+  --shadow-popup: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-composer: 0 4px 20px rgba(0, 0, 0, 0.25);
+  --shadow-sheet: 0 -8px 24px rgba(0, 0, 0, 0.45);
 
   --breakpoint-xs: 450px;
+  --breakpoint-dock: 700px;
+
+  --text-micro: 0.6875rem;   /* 11px */
+  --text-label: 0.8125rem;   /* 13px */
+  --text-lead: 0.9375rem;    /* 15px */
+  --text-section: 1.375rem;  /* 22px */
+  --text-page: 1.75rem;      /* 28px */
 
   --font-display: 'Doto', 'Space Mono', ui-monospace, monospace;
   --font-ui: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -26,30 +55,30 @@
   --animate-signin-blink: signin-blink 1s infinite;
 
   @keyframes signin-drift-dots {
-  from {
-    transform: translate3d(0, 0, 0);
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(66px, 66px, 0);
+    }
   }
-  to {
-    transform: translate3d(66px, 66px, 0);
-  }
-}
 
-@keyframes signin-blink {
-  0%,
-  100% {
-    opacity: 0.25;
+  @keyframes signin-blink {
+    0%,
+    100% {
+      opacity: 0.25;
+    }
+    50% {
+      opacity: 1;
+    }
   }
-  50% {
-    opacity: 1;
-  }
-}
 }
 
 @layer base {
   html, body, #root { height: 100%; }
   body {
-    background-color: var(--color-signin-bg);
-    color: var(--color-signin-text);
+    background-color: var(--color-app-bg);
+    color: var(--color-app-text);
     font-family: var(--font-ui);
   }
 }
