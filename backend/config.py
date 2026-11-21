@@ -15,3 +15,8 @@ FRONTEND_ORIGINS = [
     for o in os.getenv("FRONTEND_ORIGINS", "http://localhost:5173").split(",")
     if o.strip()
 ]
+
+# Longest question /query accepts, in characters. gemini-embedding-001 silently truncates
+# input past 2048 tokens; 2000 characters stays under that even for symbol-heavy or
+# non-English text. Keep in sync with MAX_QUERY_CHARS in the frontend Composer.tsx.
+MAX_QUERY_CHARS = 2000

@@ -8,7 +8,7 @@ from fastapi import FastAPI, Header, HTTPException
 from google import genai
 from prompts import build_prompt, append_sources
 
-from config import ACCESS_MODEL, FRONTEND_ORIGINS
+from config import ACCESS_MODEL, FRONTEND_ORIGINS, MAX_QUERY_CHARS
 from fastapi.middleware.cors import CORSMiddleware
 from prompts import build_prompt, append_sources, NO_INFO_REPLY
 
@@ -78,8 +78,15 @@ async def query_chunks(payload: dict, authorization: str = Header(...)):
     access_token = authorization.removeprefix("Bearer ")
 
     query_text = payload.get("query")
-    if not query_text:
+    if not isinstance(query_text, str) or not query_text.strip():
         raise HTTPException(status_code=400, detail="Missing 'query' field")
+    query_text = query_text.strip()
+    # Reject instead of letting the embedding model silently cut the question short.
+    if len(query_text) > MAX_QUERY_CHARS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Question is too long: {len(query_text)} characters, the limit is {MAX_QUERY_CHARS}.",
+        )
 
     embed_response = gemini_client.models.embed_content(
         model="gemini-embedding-001",
