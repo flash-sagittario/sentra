@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
 import SignIn from './pages/SignIn'
+import Chat from './pages/Chat'
 import QueryTest from './pages/QueryTest'
 
 function App() {
@@ -22,7 +23,13 @@ function App() {
   }, [])
 
   if (loading) return null
-  return session ? <QueryTest /> : <SignIn />
+  if (!session) return <SignIn />
+
+  const showTest =
+    import.meta.env.DEV &&
+    new URLSearchParams(window.location.search).get('view') === 'test'
+
+  return showTest ? <QueryTest /> : <Chat session={session} />
 }
 
 export default App
