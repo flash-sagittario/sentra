@@ -7,6 +7,18 @@
 ### Embeddings: `gemini-embedding-001` (replaces `text-embedding-004`)
 `text-embedding-004` was retired January 14, 2026. Replaced with `gemini-embedding-001`, output truncated to 768 dimensions via Matryoshka Representation Learning (MRL) to match the existing `pgvector` column type. Task-type flags (`RETRIEVAL_DOCUMENT` on ingestion, `RETRIEVAL_QUERY` on query calls) are set on the respective API calls.
 
+## Question length limit (2000 characters)
+
+**Decision:** The `/query` endpoint rejects questions longer than 2000 characters (counted after trimming spaces) with HTTP 422 and a readable message. The chat composer shows the same limit: a counter and a notice appear only when the text goes over, and Send is disabled until the text is shortened.
+
+**Reason:**
+- The question is embedded with `gemini-embedding-001`, which accepts at most 2048 tokens per input and silently cuts off anything beyond that. A silently shortened question would retrieve the wrong chunks without any warning.
+- 2000 characters stays under that limit even for symbol-heavy or non-English text, and is far more than a normal document question needs. Longer text also makes retrieval worse, so a higher limit would give no benefit.
+- The limit is enforced in the backend, so it still holds if the frontend is bypassed. The check runs before the embedding call, so a rejected question uses no Gemini quota.
+- The composer used to cut pasted text at 1000 characters with no message. It now keeps the text and tells the person to shorten it.
+
+---
+
 ### Shared documents are tagged `public`, not `employee`
 Section 5A's access matrix grants HR, Legal, and Admin access to general documents in addition to their own department. Only Employee is restricted to public documents alone. Tagging the shared document set (E1 to E8) as `employee` would scope them to the Employee role only, blocking the other three roles unless an exception was added. Tagging them `public` lets one simple rule cover all four roles. Caught during corpus manifest review, before it was applied to all 30 documents.
 
@@ -71,6 +83,9 @@ The original prompt instruction refused whenever context did not "clearly" conta
 - Because relevance is judged by the model, every unrelated question still costs one generation call.
 - Similarity scores overlap between relevant and unrelated questions on this single-domain corpus, so no score cutoff is used. See "No similarity cutoff for no content" above.
 - The partial-answer rule (see "Rule 1 loosened" above) trusts the model's judgment of what counts as "addressing the question." This is not independently verified per-answer, only tested against the fixed W5.5 question set.
+- The prompt does not allow tables in the answer bubble. 
+- Exact codes (for example a document ID) search poorly.
+- The question length is limited (2000 characters)
 
 ---
 
